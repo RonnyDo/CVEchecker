@@ -58,7 +58,7 @@ def check_package (package, cve_dbs):
                                 print ("[+] {0} version {1} is affected by {2}".format(product_data['product_name'], version, cve['cve']['CVE_data_meta']['ID']))
 
 
-parser = argparse.ArgumentParser(description="This little tool helps you to identify vulnerable software packages, by looking them up in the CVE (Common Vulnerabilities and Exposure) databases from the NVD. CVEchecker is designed to work offline. It gets feed with two files, the package list file and a cve database file. These can be obtained manually or by using the paramaters --download-cve-dbs and --create-packages-file.")
+parser = argparse.ArgumentParser(description="This little tool helps you to identify vulnerable software packages, by looking them up in the CVE (Common Vulnerabilities and Exposure) databases from the NVD. CVEchecker is designed to work offline. It gets feed with two files, the package list file and a cve database file(s). These can be obtained manually or by using the paramaters --download-cve-dbs and --create-packages-file.")
 
 parser.add_argument('--download-cve-dbs', action="store_true", help='Download and extract all CVE databases since 2002 from https://nvd.nist.gov/vuln/data-feeds#JSON_FEED). More than 1 GB of free harddrive space is needed.')
 parser.add_argument('--create-packages-file', action="store_true", help='Create a list of installed packages and corresponding versions. Just works for packages installed with APT.')
