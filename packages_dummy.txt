@@ -1,0 +1,3 @@
+php 5.1.1
+dropbear 2012.55m
+ssh 5.1
