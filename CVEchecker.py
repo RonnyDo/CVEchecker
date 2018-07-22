@@ -22,10 +22,30 @@ def download_cve_dbs():
         else:
             print ("[!] download failed")
 
+
+def sanitize_version(version):
+    # splitting app version examples:
+    # 2.0.4~r204
+    version = version.split("~")[0]
+    # 2.0.26-1ubuntu2
+    version = version.split("-")[0]
+    # 3.113+nmu3ubuntu4
+    version = version.split("+")[0]
+    # 4:15.1
+    if ":" in version:
+        version = version.split(":")[1]
+    return version
     
 def create_packages_file():
-    print ("[!] \"--create-packages-file\" isn't yet implemented")
-
+    apps=os.popen("apt list --installed").readlines()
+    p_file = open("./packages.txt", 'w')
+    for app in apps:
+        if ("/") in app:
+            name=app.split("/")[0]
+            version = sanitize_version(app.split()[1])
+            p_file.write("{0} {1}\n".format(name,version))
+    p_file.close
+    
     
 def get_installed_packages(f):
     p = []
@@ -46,7 +66,7 @@ def get_cve_db_paths():
 def check_package (package, cve_dbs):
     name = package.split()[0]
     version = package.split()[1]
-    print ("\n[*] lookup package {0} version {1}".format(name, version))
+    print ("\n[*] lookup \"{0} {1}\"".format(name, version))
 
     for cve_db in cve_dbs:
         for cve in cve_db["CVE_Items"]:
@@ -55,8 +75,8 @@ def check_package (package, cve_dbs):
                     if name in product_data['product_name']:
                         for version_data in product_data['version']['version_data']:
                             if version == version_data['version_value']:
-                                print ("[+] {0} version {1} is affected by {2}".format(product_data['product_name'], version, cve['cve']['CVE_data_meta']['ID']))
-
+                                print ("[+] {0} {1} is affected by {2}".format(product_data['product_name'], version, cve['cve']['CVE_data_meta']['ID']))
+                                # TODO append "Score 3.5"
 
 parser = argparse.ArgumentParser(description="This little tool helps you to identify vulnerable software packages, by looking them up in the CVE (Common Vulnerabilities and Exposure) databases from the NVD. CVEchecker is designed to work offline. It gets feed with two files, the package list file and a cve database file(s). These can be obtained manually or by using the paramaters --download-cve-dbs and --create-packages-file.")
 

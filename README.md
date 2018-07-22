@@ -5,7 +5,7 @@ A simple but powerful offline checker to lookup CVEs for software packages.
 This little tool helps you to identify vulnerable software packages, by looking them up in the CVE (Common Vulnerabilities and Exposure) databases from the NVD. CVEchecker is designed to work offline. It gets feed with two files, the package list file and a cve database file(s). These can be obtained manually or by using the paramaters --download-cve-dbs and --create-packages-file.
 
 ## Dependencies
-    ```Python 3.4```
+   ```Python 3.4```
 
 ## Quickstart
 1. Download CVE databases and create a packages.txt file (just work packages installed using APT). Don't run the check afterwards.
