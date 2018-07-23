@@ -21,7 +21,5 @@ This little tool helps you to identify vulnerable software packages, by looking 
 
 ## Missing Features
 - Show only --criticality findigs (LOW,MEDIUM,HIGH,...)
-- color output depending on CVE score
 - disable fuzzy search to avoid false positives
 - show exact reason for matching (name + version, fuzzy/exact,...)
-- cvs output with description etc
