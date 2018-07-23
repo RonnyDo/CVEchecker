@@ -75,8 +75,13 @@ def check_package (package, cve_dbs):
                     if name in product_data['product_name']:
                         for version_data in product_data['version']['version_data']:
                             if version == version_data['version_value']:
-                                print ("[+] {0} {1} is affected by {2}".format(product_data['product_name'], version, cve['cve']['CVE_data_meta']['ID']))
-                                # TODO append "Score 3.5"
+                                product_name=product_data['product_name']
+                                product_version=version_data['version_value']
+                                cve_id=cve['cve']['CVE_data_meta']['ID']
+                                impact_score=cve['impact']['baseMetricV3']['cvssV3']['baseScore']
+                                impact_severity=cve['impact']['baseMetricV3']['cvssV3']['baseSeverity']                                
+                                print ("[+] {0} {1} is affected by {2}, Score {3} ({4})".format(product_name, product_version, cve_id, impact_score, impact_severity))
+                                
 
 parser = argparse.ArgumentParser(description="This little tool helps you to identify vulnerable software packages, by looking them up in the CVE (Common Vulnerabilities and Exposure) databases from the NVD. CVEchecker is designed to work offline. It gets feed with two files, the package list file and a cve database file(s). These can be obtained manually or by using the paramaters --download-cve-dbs and --create-packages-file.")
 
