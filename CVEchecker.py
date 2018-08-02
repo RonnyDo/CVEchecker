@@ -22,6 +22,13 @@ def download_cve_dbs():
         else:
             print ("[!] download failed")
 
+def load_cve_whitelist(f):
+    cves = []
+    with open(f, encoding='utf-8') as p_file:
+        for line in p_file:
+            cves.append(line.replace("\n", "").replace("\r", ""))
+    return cves    
+  
 
 def sanitize_version(version):
     # splitting app version examples:
@@ -63,7 +70,7 @@ def get_cve_db_paths():
     return cve_db_paths
 
     
-def check_package (package, cve_dbs):
+def check_package (package, cve_dbs, whitelist):
     name = package.split()[0]
     version = package.split()[1]
     print ("\n[*] lookup \"{0} {1}\"".format(name, version))
@@ -74,13 +81,15 @@ def check_package (package, cve_dbs):
                 for product_data in vendor['product']['product_data']:
                     if name in product_data['product_name']:
                         for version_data in product_data['version']['version_data']:
-                            if version == version_data['version_value']:
+                            if version == version_data['version_value']:                                
                                 product_name=product_data['product_name']
                                 product_version=version_data['version_value']
                                 cve_id=cve['cve']['CVE_data_meta']['ID']
                                 impact_score=cve['impact']['baseMetricV3']['cvssV3']['baseScore']
                                 impact_severity=cve['impact']['baseMetricV3']['cvssV3']['baseSeverity']                  
                                 cve_description=cve['cve']['description']['description_data'][0]['value'] # should only be english description
+                                if cve_id in whitelist:
+                                    continue
                                 print ("[+] {0} {1} is affected by {2}, Score {3} ({4})".format(product_name, product_version, cve_id, impact_score, impact_severity))
                                 if args.csv:
                                     csv_file.write("{0};{1};{2};{3};{4};{5};{6}\n".format(name, product_name, version, cve_id, impact_score, impact_severity, cve_description))
@@ -92,6 +101,7 @@ parser.add_argument('--download-cve-dbs', action="store_true", help='Download an
 parser.add_argument('--create-packages-file', action="store_true", help='Create a list of installed packages and corresponding versions. Just works for packages installed with APT.')
 parser.add_argument('--packages-file', help='A whitespace seperated list with software name and version. If parameter isn\'t set, the file ./packages.txt will be loaded by default.')
 parser.add_argument('--cve-dbs', help='Path to CVE database file(s). Multiple paths must be seperated by a comma. The json content must follow the NVD JSON 0.1 beta Schema (https://nvd.nist.gov/vuln/data-feeds#JSON_FEED). If parameter isn\'t set, all files with the name \"nvdcve-1.0-YYYY.json\" will be loaded by default.')
+parser.add_argument('--whitelist-file', help="A list of CVEs (format: 'CVE-2018-10546') which won't show up in the result. Can be used to exclude false-positives.")
 parser.add_argument('--no-check', action="store_true", help='Use it together with --download-cve-db or --create-packages-file to skip the cve checking process afterwards.')
 parser.add_argument('--csv', help='File name where results shall be stored.')
 
@@ -106,11 +116,11 @@ def load_cve_dbs(cve_db_paths):
     return cve_dbs
 
 
-def check(packages, cve_dbs):
+def check(packages, cve_dbs, cve_whitelist):
     if args.csv:
         csv_file.write("Name;Matching Name;Version;CVE;Score;Severity;Description\n")
     for package in packages:
-        check_package(package, cve_dbs)
+        check_package(package, cve_dbs, cve_whitelist)
     if args.csv:
         csv_file.close
 
@@ -118,6 +128,7 @@ def check(packages, cve_dbs):
 # defaults
 packages_file=""
 cve_db_paths=[]
+cve_whitelist=[]
 
 if args.download_cve_dbs:
     download_cve_dbs()
@@ -149,4 +160,9 @@ if not args.no_check:
     print ("\n[*] {0} CVE databases loaded:".format(len(cve_db_paths)))
     for db_path in cve_db_paths:
         print ("[*] {0}".format(db_path))
-    check(packages, cve_dbs)
+    if args.whitelist_file:
+        cve_whitelist=load_cve_whitelist(args.whitelist_file)
+    print ("\n[*] {0} CVEs whitelisted:".format(len(cve_whitelist)))
+    for cve_id in cve_whitelist:
+        print ("[*] {0}".format(cve_id)) 
+    check(packages, cve_dbs, cve_whitelist)
